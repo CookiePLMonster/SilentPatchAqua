@@ -7,7 +7,7 @@ project "SilentPatchAqua"
 	language "C++"
 
 	include "source/VersionInfo.lua"
-	files { "**/MemoryMgr.h" }
+	files { "**/MemoryMgr.h", "**/Patterns.*", "**/HookInit.hpp" }
 
 
 workspace "*"

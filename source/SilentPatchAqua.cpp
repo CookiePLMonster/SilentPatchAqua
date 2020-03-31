@@ -1,26 +1,15 @@
 #include "Utils/MemoryMgr.h"
+#include "Utils/Patterns.h"
 
 void OnInitializeHook()
 {
 	using namespace Memory::VP;
-
-	// If it's not 1.18, bail out
-	// Both Steam and GOG versions are 1.18 so it -should- be OK
-	if ( !MemEquals( 0x42A7A0, { 0x64, 0xA1, 0x00, 0x00, 0x00, 0x00, 0x50 } ) )
-	{
-#ifndef _DEBUG
-		MessageBoxW( nullptr, L"You are using an executable version not supported by SilentPatch!\n\n"
-			L"Only version 1.18 is supported - that is, Steam and GOG releases. Old retail releases are likely unsupported, "
-			L"and possibly never will.",
-			L"SilentPatch",
-			MB_OK | MB_ICONWARNING );
-#endif
-		return;
-	}
+	using namespace hook;
 
 	// Fix DirectInput buffer overflow being treated as failure
 	// This is fixed in AquaNox 2
 	// jne -> jl
-	Patch<uint8_t>( 0x51CACA, 0x7C ); // Mouse
-	Patch<uint8_t>( 0x51B790, 0x7C ); // Keyboard
+	pattern( "6A 14 50 FF 51 28 85 C0 75" ).count(3).for_each_result([] ( pattern_match match ) { // This pattern will fail if eg. GOG.com applies this patch
+		Patch<uint8_t>( match.get<void>( 8 ), 0x7C );											// in executable directly, but it's fine as it'll just never execute this lambda
+	} );
 }
